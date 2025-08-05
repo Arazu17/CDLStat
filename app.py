@@ -21,7 +21,7 @@ with st.sidebar:
     selected_player_1 = st.selectbox("Select Player 1", players, index=0)
     selected_player_2 = st.selectbox("Select Player 2", players, index=1)
 
-    opponents = sorted(df['opponent'].dropna().unique())
+    opponents = ["ALL"] + sorted(df['opponent'].dropna().unique().tolist())
     selected_opponent = st.selectbox("Select Opponent Faced", opponents)
 
     all_modes = sorted(df['mode'].dropna().unique())
@@ -36,7 +36,7 @@ with st.sidebar:
 # Filter function
 def apply_filters(data, player):
     filtered = data[data['player'] == player]
-    if selected_opponent:
+    if selected_opponent != "ALL":
         filtered = filtered[filtered['opponent'] == selected_opponent]
     if selected_mode != "All":
         filtered = filtered[filtered['mode'] == selected_mode]
