@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 # Load data
 @st.cache_data
@@ -85,17 +86,45 @@ def display_stats(col, data, player_name):
 display_stats(col1, player1_df, selected_player_1)
 display_stats(col2, player2_df, selected_player_2)
 
-# 📈 Chart
-st.markdown("## 📈 Player 1 Map Performance")
-if not player1_df.empty:
-    st.line_chart(
-        data=player1_df.set_index('map number')[['kills', 'deaths']],
-        use_container_width=True
-    )
 
-st.markdown("## 📈 Player 2 Map Performance")
+# 📊 Interactive Bar Graphs (Altair)
+def plot_mode_hist(df, player_name):
+    modes = ["Hardpoint", "Search & Destroy", "Control"]
+    st.markdown(f"## 🎮 {player_name} Mode Performance")
+
+    cols = st.columns(3)
+    for mode, col in zip(modes, cols):
+        mode_df = df[df["mode"] == mode]
+
+        col.subheader(mode)
+        if mode_df.empty:
+            col.warning(f"No {mode} data.")
+            continue
+
+        # Count frequencies of each unique kills value safely
+        kills_count = mode_df["kills"].value_counts().reset_index()
+        kills_count.columns = ["kills", "frequency"]  # safe renaming
+        kills_count = kills_count.sort_values("kills")
+
+        # Ensure numeric types
+        kills_count["kills"] = kills_count["kills"].astype(int)
+        kills_count["frequency"] = kills_count["frequency"].astype(int)
+
+        # Altair interactive bar chart
+        chart = (
+            alt.Chart(kills_count)
+            .mark_bar()
+            .encode(
+                x=alt.X("kills:O", title="Kills"),   # use :O for ordered categorical
+                y=alt.Y("frequency:Q", title="Frequency"),
+                tooltip=["kills", "frequency"]
+            )
+        )
+
+        col.altair_chart(chart, use_container_width=True)
+
+# Show for both players
+if not player1_df.empty:
+    plot_mode_hist(player1_df, selected_player_1)
 if not player2_df.empty:
-    st.line_chart(
-        data=player2_df.set_index('map number')[['kills', 'deaths']],
-        use_container_width=True
-    )
+    plot_mode_hist(player2_df, selected_player_2)
