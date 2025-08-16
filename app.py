@@ -60,7 +60,7 @@ def display_stats(col, data, player_name):
     if data.empty:
         col.warning("No data for selected filters.")
         return
-    col.dataframe(data[['mode', 'map', 'kills', 'deaths', 'damage', 'W/L']], use_container_width=True)
+    col.dataframe(data[['map', 'opponent', 'W/L', 'kills', 'deaths', 'score']], use_container_width=True)
 
     wins = data['W/L'].str.lower().eq('w').sum()
     losses = data['W/L'].str.lower().eq('l').sum()
